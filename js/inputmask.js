@@ -702,6 +702,7 @@ Inputmask.keyCode = {
     CONTROL: 17
 };
 Inputmask.dependencyLib = $;
+Inputmask.originalPlaceholder = '';
 
 function resolveAlias(aliasStr, options, opts) {
     var aliasDefinition = Inputmask.prototype.aliases[aliasStr];
@@ -834,8 +835,7 @@ function maskScope(actionObj, maskset, opts) {
         ignorable = false,
         maxLength,
         mouseEnter = false,
-        colorMask,
-        originalPlaceholder;
+        colorMask;
 
     //maskset helperfunctions
     var getMaskTemplate = function (baseOnInput, minimalPos, includeMode, noJit, clearOptionalTail) {
@@ -2290,7 +2290,7 @@ function maskScope(actionObj, maskset, opts) {
             var input = this;
             mouseEnter = false;
             if (opts.clearMaskOnLostFocus && document.activeElement !== input) {
-                HandleNativePlaceholder(input, originalPlaceholder);
+                HandleNativePlaceholder(input, Inputmask.originalPlaceholder);
             }
         },
         clickEvent: function (e, tabbed) {
@@ -2383,7 +2383,7 @@ function maskScope(actionObj, maskset, opts) {
             var $input = $(this),
                 input = this;
             if (input.inputmask) {
-                HandleNativePlaceholder(input, originalPlaceholder);
+                HandleNativePlaceholder(input, Inputmask.originalPlaceholder);
                 var nptValue = input.inputmask._valueGet(),
                     buffer = getBuffer().slice();
 
@@ -3080,7 +3080,7 @@ function maskScope(actionObj, maskset, opts) {
             el = elem;
             $el = $(el);
 
-            originalPlaceholder = el.placeholder;
+            Inputmask.originalPlaceholder = el.placeholder;
 
             //read maxlength prop from el
             maxLength = el !== undefined ? el.maxLength : undefined;

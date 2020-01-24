@@ -3,7 +3,7 @@
 * https://github.com/ne3Vubeki/Inputmask
 * Copyright (c) 2010 - 2020 Robin Herbots
 * Licensed under the MIT license (http://www.opensource.org/licenses/mit-license.php)
-* Version: 4.0.10-beta.0
+* Version: 4.0.10-beta.1
 */
 
 (function(modules) {
@@ -813,6 +813,7 @@
             CONTROL: 17
         };
         Inputmask.dependencyLib = $;
+        Inputmask.originalPlaceholder = "";
         function resolveAlias(aliasStr, options, opts) {
             var aliasDefinition = Inputmask.prototype.aliases[aliasStr];
             if (aliasDefinition) {
@@ -915,7 +916,7 @@
         function maskScope(actionObj, maskset, opts) {
             maskset = maskset || this.maskset;
             opts = opts || this.opts;
-            var inputmask = this, el = this.el, isRTL = this.isRTL, undoValue, $el, skipKeyPressEvent = false, skipInputEvent = false, ignorable = false, maxLength, mouseEnter = false, colorMask, originalPlaceholder;
+            var inputmask = this, el = this.el, isRTL = this.isRTL, undoValue, $el, skipKeyPressEvent = false, skipInputEvent = false, ignorable = false, maxLength, mouseEnter = false, colorMask;
             var getMaskTemplate = function getMaskTemplate(baseOnInput, minimalPos, includeMode, noJit, clearOptionalTail) {
                 var greedy = opts.greedy;
                 if (clearOptionalTail) opts.greedy = false;
@@ -2127,7 +2128,7 @@
                     var input = this;
                     mouseEnter = false;
                     if (opts.clearMaskOnLostFocus && document.activeElement !== input) {
-                        HandleNativePlaceholder(input, originalPlaceholder);
+                        HandleNativePlaceholder(input, Inputmask.originalPlaceholder);
                     }
                 },
                 clickEvent: function clickEvent(e, tabbed) {
@@ -2211,7 +2212,7 @@
                 blurEvent: function blurEvent(e) {
                     var $input = $(this), input = this;
                     if (input.inputmask) {
-                        HandleNativePlaceholder(input, originalPlaceholder);
+                        HandleNativePlaceholder(input, Inputmask.originalPlaceholder);
                         var nptValue = input.inputmask._valueGet(), buffer = getBuffer().slice();
                         if (nptValue !== "" || colorMask !== undefined) {
                             if (opts.clearMaskOnLostFocus) {
@@ -2806,7 +2807,7 @@
                 if (isSupported !== false) {
                     el = elem;
                     $el = $(el);
-                    originalPlaceholder = el.placeholder;
+                    Inputmask.originalPlaceholder = el.placeholder;
                     maxLength = el !== undefined ? el.maxLength : undefined;
                     if (maxLength === -1) maxLength = undefined;
                     if (opts.colorMask === true) {
