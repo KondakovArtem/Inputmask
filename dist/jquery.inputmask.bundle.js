@@ -3,7 +3,7 @@
 * https://github.com/ne3Vubeki/Inputmask
 * Copyright (c) 2010 - 2020 Robin Herbots
 * Licensed under the MIT license (http://www.opensource.org/licenses/mit-license.php)
-* Version: 4.0.10-beta.1
+* Version: 4.0.10-beta.2
 */
 
 (function(modules) {
@@ -2371,6 +2371,73 @@
                             delete maskset.validPositions[vndx].generatedInput;
                         }
                     }
+                }
+            }
+            function determineNewCaretPosition(selectedCaret, tabbed) {
+                function doRadixFocus(clickPos) {
+                    if (opts.radixPoint !== "" && opts.digits !== 0) {
+                        var vps = maskset.validPositions;
+                        if (vps[clickPos] === undefined || vps[clickPos].input === getPlaceholder(clickPos)) {
+                            if (clickPos < seekNext(-1)) return true;
+                            var radixPos = $.inArray(opts.radixPoint, getBuffer());
+                            if (radixPos !== -1) {
+                                for (var vp in vps) {
+                                    if (vps[vp] && radixPos < vp && vps[vp].input !== getPlaceholder(vp)) {
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+                if (tabbed) {
+                    if (isRTL) {
+                        selectedCaret.end = selectedCaret.begin;
+                    } else {
+                        selectedCaret.begin = selectedCaret.end;
+                    }
+                }
+                if (selectedCaret.begin === selectedCaret.end) {
+                    switch (opts.positionCaretOnClick) {
+                      case "none":
+                        break;
+
+                      case "select":
+                        selectedCaret = {
+                            begin: 0,
+                            end: getBuffer().length
+                        };
+                        break;
+
+                      case "ignore":
+                        selectedCaret.end = selectedCaret.begin = seekNext(getLastValidPosition());
+                        break;
+
+                      case "radixFocus":
+                        if (doRadixFocus(selectedCaret.begin)) {
+                            var radixPos = getBuffer().join("").indexOf(opts.radixPoint);
+                            selectedCaret.end = selectedCaret.begin = opts.numericInput ? seekNext(radixPos) : radixPos;
+                            break;
+                        }
+
+                      default:
+                        var clickPosition = selectedCaret.begin, lvclickPosition = getLastValidPosition(clickPosition, true), lastPosition = seekNext(lvclickPosition === -1 && !isMask(0) ? 0 : lvclickPosition);
+                        if (clickPosition < lastPosition) {
+                            selectedCaret.end = selectedCaret.begin = !isMask(clickPosition, true) && !isMask(clickPosition - 1, true) ? seekNext(clickPosition) : clickPosition;
+                        } else {
+                            var lvp = maskset.validPositions[lvclickPosition], tt = getTestTemplate(lastPosition, lvp ? lvp.match.locator : undefined, lvp), placeholder = getPlaceholder(lastPosition, tt.match);
+                            if (placeholder !== "" && getBuffer()[lastPosition] !== placeholder && tt.match.optionalQuantifier !== true && tt.match.newBlockMarker !== true || !isMask(lastPosition, opts.keepStatic) && tt.match.def === placeholder) {
+                                var newPos = seekNext(lastPosition);
+                                if (clickPosition >= newPos || clickPosition === lastPosition) {
+                                    lastPosition = newPos;
+                                }
+                            }
+                            selectedCaret.end = selectedCaret.begin = lastPosition;
+                        }
+                    }
+                    return selectedCaret;
                 }
             }
             function unmaskedvalue(input) {

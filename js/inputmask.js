@@ -2558,6 +2558,73 @@ function maskScope(actionObj, maskset, opts) {
         }
     }
 
+    function determineNewCaretPosition(selectedCaret, tabbed) {
+        function doRadixFocus(clickPos) {
+            if (opts.radixPoint !== "" && opts.digits !== 0) {
+                var vps = maskset.validPositions;
+                if (vps[clickPos] === undefined || (vps[clickPos].input === getPlaceholder(clickPos))) {
+                    if (clickPos < seekNext(-1)) return true;
+                    var radixPos = $.inArray(opts.radixPoint, getBuffer());
+                    if (radixPos !== -1) {
+                        for (var vp in vps) {
+                            if (vps[vp] && radixPos < vp && vps[vp].input !== getPlaceholder(vp)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        if (tabbed) {
+            if (isRTL) {
+                selectedCaret.end = selectedCaret.begin;
+            } else {
+                selectedCaret.begin = selectedCaret.end;
+            }
+        }
+        if (selectedCaret.begin === selectedCaret.end) {
+            switch (opts.positionCaretOnClick) {
+                case "none":
+                    break;
+                case "select":
+                    selectedCaret = { begin: 0, end: getBuffer().length };
+                    break;
+                case "ignore":
+                    selectedCaret.end = selectedCaret.begin = seekNext(getLastValidPosition());
+                    break;
+                case "radixFocus":
+                    if (doRadixFocus(selectedCaret.begin)) {
+                        var radixPos = getBuffer().join("").indexOf(opts.radixPoint);
+                        selectedCaret.end = selectedCaret.begin = opts.numericInput ? seekNext(radixPos) : radixPos;
+                        break;
+                    } //fallback to lvp
+                // eslint-disable-next-line no-fallthrough
+                default: //lvp:
+                    var clickPosition = selectedCaret.begin,
+                        lvclickPosition = getLastValidPosition(clickPosition, true),
+                        lastPosition = seekNext((lvclickPosition === -1 && !isMask(0)) ? 0 : lvclickPosition);
+                    if (clickPosition < lastPosition) {
+                        selectedCaret.end = selectedCaret.begin = !isMask(clickPosition, true) && !isMask(clickPosition - 1, true) ? seekNext(clickPosition) : clickPosition;
+                    } else {
+                        var lvp = maskset.validPositions[lvclickPosition],
+                            tt = getTestTemplate(lastPosition, lvp ? lvp.match.locator : undefined, lvp),
+                            placeholder = getPlaceholder(lastPosition, tt.match);
+                        if ((placeholder !== "" && getBuffer()[lastPosition] !== placeholder && tt.match.optionalQuantifier !== true && tt.match.newBlockMarker !== true) || (!isMask(lastPosition, opts.keepStatic) && tt.match.def === placeholder)) {
+                            var newPos = seekNext(lastPosition);
+                            if (clickPosition >= newPos || clickPosition === lastPosition) {
+                                lastPosition = newPos;
+                            }
+                        }
+                        selectedCaret.end = selectedCaret.begin = lastPosition;
+                    }
+            }
+            return selectedCaret;
+        }
+    }
+
     function unmaskedvalue(input) {
         if (input) {
             if (input.inputmask === undefined) {
