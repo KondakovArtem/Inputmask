@@ -702,7 +702,6 @@ Inputmask.keyCode = {
     CONTROL: 17
 };
 Inputmask.dependencyLib = $;
-Inputmask.originalPlaceholder = '';
 
 function resolveAlias(aliasStr, options, opts) {
     var aliasDefinition = Inputmask.prototype.aliases[aliasStr];
@@ -2290,7 +2289,7 @@ function maskScope(actionObj, maskset, opts) {
             var input = this;
             mouseEnter = false;
             if (opts.clearMaskOnLostFocus && document.activeElement !== input) {
-                HandleNativePlaceholder(input, Inputmask.originalPlaceholder);
+                HandleNativePlaceholder(input, input.originalPlaceholder);
             }
         },
         clickEvent: function (e, tabbed) {
@@ -2383,7 +2382,7 @@ function maskScope(actionObj, maskset, opts) {
             var $input = $(this),
                 input = this;
             if (input.inputmask) {
-                HandleNativePlaceholder(input, Inputmask.originalPlaceholder);
+                HandleNativePlaceholder(input, input.originalPlaceholder);
                 var nptValue = input.inputmask._valueGet(),
                     buffer = getBuffer().slice();
 
@@ -3148,6 +3147,7 @@ function maskScope(actionObj, maskset, opts) {
             $el = $(el);
 
             Inputmask.originalPlaceholder = el.placeholder;
+            el.originalPlaceholder = el.placeholder;
 
             //read maxlength prop from el
             maxLength = el !== undefined ? el.maxLength : undefined;

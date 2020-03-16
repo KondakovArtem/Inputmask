@@ -3,7 +3,7 @@
 * https://github.com/ne3Vubeki/Inputmask
 * Copyright (c) 2010 - 2020 Robin Herbots
 * Licensed under the MIT license (http://www.opensource.org/licenses/mit-license.php)
-* Version: 4.0.10-beta.2
+* Version: 4.0.10-beta.3
 */
 
 (function(factory) {
@@ -628,7 +628,6 @@
         CONTROL: 17
     };
     Inputmask.dependencyLib = $;
-    Inputmask.originalPlaceholder = "";
     function resolveAlias(aliasStr, options, opts) {
         var aliasDefinition = Inputmask.prototype.aliases[aliasStr];
         if (aliasDefinition) {
@@ -1937,7 +1936,7 @@
                 var input = this;
                 mouseEnter = false;
                 if (opts.clearMaskOnLostFocus && document.activeElement !== input) {
-                    HandleNativePlaceholder(input, Inputmask.originalPlaceholder);
+                    HandleNativePlaceholder(input, input.originalPlaceholder);
                 }
             },
             clickEvent: function(e, tabbed) {
@@ -2021,7 +2020,7 @@
             blurEvent: function(e) {
                 var $input = $(this), input = this;
                 if (input.inputmask) {
-                    HandleNativePlaceholder(input, Inputmask.originalPlaceholder);
+                    HandleNativePlaceholder(input, input.originalPlaceholder);
                     var nptValue = input.inputmask._valueGet(), buffer = getBuffer().slice();
                     if (nptValue !== "" || colorMask !== undefined) {
                         if (opts.clearMaskOnLostFocus) {
@@ -2680,6 +2679,7 @@
                 el = elem;
                 $el = $(el);
                 Inputmask.originalPlaceholder = el.placeholder;
+                el.originalPlaceholder = el.placeholder;
                 maxLength = el !== undefined ? el.maxLength : undefined;
                 if (maxLength === -1) maxLength = undefined;
                 if (opts.colorMask === true) {
